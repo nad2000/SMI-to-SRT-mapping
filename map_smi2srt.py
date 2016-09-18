@@ -70,8 +70,8 @@ def srts(file_name):
                     line += " " + l
 
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-st = dict(msis("Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi"))
-ss = list(srts("Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))
+st = dict(msis(sys.argv[1] if len(sys.argv) > 1 else "Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi"))
+ss = list(srts(sys.argv[2] if len(sys.argv) > 2 else "Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))
 keys = sorted(st.keys())                  
 for l in ss:
     idx = filter(lambda i: i >= l[1] and i <= l[2], keys)
