@@ -80,9 +80,10 @@ if __name__ == "__main__":
     for l in ss:
         idx = filter(lambda i: i >= l[1] and i <= l[2], keys)
         if idx:
-            line = ' / '.join(st[i] for i in idx)
+            line = ' / '.join(st[i].strip() for i in idx).replace("<br>", "")
+        
             try:
-                print u"%s\t%s" % (line.strip(), l[3])
+                print u"%s\t%s" % (line, l[3])
             except Exception as ex:
                 logging.error("Error in line %d (ts: %d): %s", l[0], l[1], ex)
 
