@@ -6,6 +6,8 @@ Created on Mon Sep 19 00:03:20 2016
 @author: nad2000
 """
 import codecs
+import sys
+#%%
 
 def msis(file_name):
     """
@@ -67,10 +69,10 @@ def srts(file_name):
                 else:
                     line += " " + l
 
-
+sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 st = dict(msis("Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi"))
 ss = list(srts("Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))                    
 for l in ss:
     idx = filter(lambda i: i >= l[1] and i <= l[2], st.keys())
     if idx:
-        print "%s\t%s" % (st[idx[0]].strip(), l[3])                    
+        print u"%s\t%s" % (st[idx[0]].strip(), l[3])                    
