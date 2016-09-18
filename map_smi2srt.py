@@ -71,8 +71,10 @@ def srts(file_name):
 
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 st = dict(msis("Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi"))
-ss = list(srts("Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))                    
+ss = list(srts("Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))
+keys = sorted(st.keys())                  
 for l in ss:
-    idx = filter(lambda i: i >= l[1] and i <= l[2], st.keys())
+    idx = filter(lambda i: i >= l[1] and i <= l[2], keys)
     if idx:
-        print u"%s\t%s" % (st[idx[0]].strip(), l[3])                    
+        line = ' '.join(st[i] for i in idx)
+        print u"%s\t%s" % (st[idx[0]].strip(), l[3])             
