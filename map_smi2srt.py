@@ -7,6 +7,7 @@ Created on Mon Sep 19 00:03:20 2016
 """
 import codecs
 import sys
+import logging
 #%%
 
 def msis(file_name):
@@ -33,7 +34,7 @@ def extract(file_name):
         for line in subtitle(file_name):
             out.write("%d\t%s\n" % line)
  
-           
+#%%           
 def ms(ts_str):
     try:
         ts1, ms = ts_str.split(",")
@@ -43,7 +44,7 @@ def ms(ts_str):
     except:
         return None
     
-
+#%%
           
 def srts(file_name):
     """
@@ -53,7 +54,7 @@ def srts(file_name):
     num = None
     ts_start, ts_end = None, None
     with codecs.open(file_name, "r", "UTF-8") as s:
-        for l in s:
+        for l in s.xreadlines():
             l = l.strip()
             if l.isdigit():
                 num = int(l)
@@ -67,14 +68,21 @@ def srts(file_name):
                 if line == "":
                     line = l
                 else:
-                    line += " " + l
+                    line += " / " + l
 
-sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-st = dict(msis(sys.argv[1] if len(sys.argv) > 1 else "Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi"))
-ss = list(srts(sys.argv[2] if len(sys.argv) > 2 else "Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))
-keys = sorted(st.keys())                  
-for l in ss:
-    idx = filter(lambda i: i >= l[1] and i <= l[2], keys)
-    if idx:
-        line = ' '.join(st[i] for i in idx)
-        print u"%s\t%s" % (st[idx[0]].strip(), l[3])             
+if __name__ == "__main__":
+    
+    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+    
+    st = dict(msis(sys.argv[1] if len(sys.argv) > 1 else "Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi"))
+    ss = list(srts(sys.argv[2] if len(sys.argv) > 2 else "Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))
+    keys = sorted(st.keys())                  
+    for l in ss:
+        idx = filter(lambda i: i >= l[1] and i <= l[2], keys)
+        if idx:
+            line = ' / '.join(st[i] for i in idx)
+            try:
+                print u"%s\t%s" % (line.strip(), l[3])
+            except Exception as ex:
+                logging.error("Error in line %d (ts: %d): %s", l[0], l[1], ex)
+
