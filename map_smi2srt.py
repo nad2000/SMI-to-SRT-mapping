@@ -23,6 +23,7 @@ def msis(file_name):
                 continue
             else:
                 if ts is not None:
+                    l = l.replace("<br>", "").strip()
                     yield (ts, l)
                     ts = None
 
@@ -77,13 +78,13 @@ if __name__ == "__main__":
     st = dict(msis(sys.argv[1] if len(sys.argv) > 1 else "Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi"))
     ss = list(srts(sys.argv[2] if len(sys.argv) > 2 else "Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))
     keys = sorted(st.keys())                  
-    for l in ss:
-        idx = filter(lambda i: i >= l[1] and i <= l[2], keys)
-        if idx:
-            line = ' / '.join(st[i].strip() for i in idx).replace("<br>", "")
+    for ts in keys:
+        lines = filter(lambda l: l[1] <= ts and ts <= l[2], ss)
+        if lines:
+            ss_line = ' / '.join(l[3].strip() for l in lines).replace("<br>", "")
         
             try:
-                print u"%s\t%s" % (line, l[3])
+                print u"%s\t%s" % (st[ts], ss_line)
             except Exception as ex:
                 logging.error("Error in line %d (ts: %d): %s", l[0], l[1], ex)
 
