@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Mon Sep 19 00:03:20 2016
@@ -8,14 +8,15 @@ Created on Mon Sep 19 00:03:20 2016
 import codecs
 import sys
 import logging
+import click
 #%%
 
-def msis(file_name):
+def msis(input_file):
     """
     Iterates over lines ins SMI file
     """
-    ts = None
-    with codecs.open(file_name, "r", "UTF-8") as s:
+    def lines(s):
+        ts = None
         for l in s:
             if l.startswith("<SYNC Start="):
                 ts = int(l[12:l.index(">")])
@@ -23,9 +24,15 @@ def msis(file_name):
                 continue
             else:
                 if ts is not None:
-                    l = l.replace("<br>", "").strip()
+                    l = l.replace('\t', ' ').replace("<br>", " / ").strip()
                     yield (ts, l)
                     ts = None
+
+    if isinstance(input_file, str):
+        with codecs.open(input_file, "r", "UTF-8") as s:
+            yield from lines(s)
+    else:
+        yield from lines(input_file)
 
 
 def extract(file_name):
@@ -34,8 +41,8 @@ def extract(file_name):
     with codecs.open(output_name, "w", 'UTF-8') as out:
         for line in subtitle(file_name):
             out.write("%d\t%s\n" % line)
- 
-#%%           
+
+#%%
 def ms(ts_str):
     try:
         ts1, ms = ts_str.split(",")
@@ -44,17 +51,17 @@ def ms(ts_str):
         return ms + 1000 * (int(ss) + 60 * (int(mm) + 60 * int(hh)))
     except:
         return None
-    
+
 #%%
-          
-def srts(file_name):
+
+def srts(input_file):
     """
     Iterates over lines ins SRT file
     """
-    ts = None
-    num = None
-    ts_start, ts_end = None, None
-    with codecs.open(file_name, "r", "UTF-8") as s:
+    def lines(s):
+        ts = None
+        num = None
+        ts_start, ts_end = None, None
         for l in s.xreadlines():
             l = l.strip()
             if l.isdigit():
@@ -71,18 +78,44 @@ def srts(file_name):
                 else:
                     line += " / " + l
 
-if __name__ == "__main__":
-    
-    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-    
-    st = dict(msis(sys.argv[1] if len(sys.argv) > 1 else "Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi"))
-    ss = list(srts(sys.argv[2] if len(sys.argv) > 2 else "Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))
-    keys = sorted(st.keys())                  
+    if isinstance(input_file, str):
+        with codecs.open(input_file, "r", "UTF-8") as s:
+            yield from lines(s)
+    else:
+        yield from lines(input_file)
+
+
+
+@click.command()
+@click.argument("smi_input", type=click.File("rb"), required=False, default="Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi")
+@click.argument("srt_input", type=click.File("rb"), required=False, default="Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt")
+def smi2srt(smi_input, srt_input):
+    st = dict(msis(smi_input))
+    ss = list(srts(srt_input))
+    keys = sorted(st.keys())
     for ts in keys:
         lines = filter(lambda l: l[1] <= ts and ts <= l[2], ss)
         if lines:
             ss_line = ' / '.join(l[3].strip() for l in lines).replace("<br>", "")
-        
+
+            try:
+                print u"%s\t%s" % (st[ts], ss_line)
+            except Exception as ex:
+                logging.error("Error in line %d (ts: %d): %s", l[0], l[1], ex)
+
+
+if __name__ == "__main__":
+
+    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+
+    st = dict(msis(sys.argv[1] if len(sys.argv) > 1 else "Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi"))
+    ss = list(srts(sys.argv[2] if len(sys.argv) > 2 else "Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))
+    keys = sorted(st.keys())
+    for ts in keys:
+        lines = filter(lambda l: l[1] <= ts and ts <= l[2], ss)
+        if lines:
+            ss_line = ' / '.join(l[3].strip() for l in lines).replace("<br>", "")
+
             try:
                 print u"%s\t%s" % (st[ts], ss_line)
             except Exception as ex:
