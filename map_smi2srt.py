@@ -89,35 +89,34 @@ def srts(input_file):
 @click.command()
 @click.argument("smi_input", type=click.File("rb"), required=False, default="Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi")
 @click.argument("srt_input", type=click.File("rb"), required=False, default="Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt")
-def smi2srt(smi_input, srt_input):
+def cli(smi_input, srt_input):
     st = dict(msis(smi_input))
     ss = list(srts(srt_input))
-    keys = sorted(st.keys())
-    for ts in keys:
+    for ts in sorted(st.keys()):
         lines = filter(lambda l: l[1] <= ts and ts <= l[2], ss)
         if lines:
-            ss_line = ' / '.join(l[3].strip() for l in lines).replace("<br>", "")
+            ss_line = ' / '.join(l[3].strip() for l in lines).replace("<br>", " / ").replace('\t', ' ')
 
             try:
-                print u"%s\t%s" % (st[ts], ss_line)
+                click.echo(f"{st[ts]}\t{ss_line}")
             except Exception as ex:
                 logging.error("Error in line %d (ts: %d): %s", l[0], l[1], ex)
 
 
-if __name__ == "__main__":
-
-    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-
-    st = dict(msis(sys.argv[1] if len(sys.argv) > 1 else "Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi"))
-    ss = list(srts(sys.argv[2] if len(sys.argv) > 2 else "Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))
-    keys = sorted(st.keys())
-    for ts in keys:
-        lines = filter(lambda l: l[1] <= ts and ts <= l[2], ss)
-        if lines:
-            ss_line = ' / '.join(l[3].strip() for l in lines).replace("<br>", "")
-
-            try:
-                print u"%s\t%s" % (st[ts], ss_line)
-            except Exception as ex:
-                logging.error("Error in line %d (ts: %d): %s", l[0], l[1], ex)
+#if __name__ == "__main__":
+#
+#    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+#
+#    st = dict(msis(sys.argv[1] if len(sys.argv) > 1 else "Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi"))
+#    ss = list(srts(sys.argv[2] if len(sys.argv) > 2 else "Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))
+#    keys = sorted(st.keys())
+#    for ts in keys:
+#        lines = filter(lambda l: l[1] <= ts and ts <= l[2], ss)
+#        if lines:
+#            ss_line = ' / '.join(l[3].strip() for l in lines).replace("<br>", "")
+#
+#            try:
+#                print u"%s\t%s" % (st[ts], ss_line)
+#            except Exception as ex:
+#                logging.error("Error in line %d (ts: %d): %s", l[0], l[1], ex)
 
