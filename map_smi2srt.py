@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Sep 19 00:03:20 2016
+Created on Mon Sep 19 00:03:20 2016, 2107
 
 @author: nad2000
 """
 import codecs
-import sys
 import logging
+import sys
+
 import click
+
 #%%
+
 
 def msis(input_file):
     """
     Iterates over lines ins SMI file
     """
+
     def lines(s):
         ts = None
         for l in s:
@@ -42,6 +46,7 @@ def extract(file_name):
         for line in subtitle(file_name):
             out.write("%d\t%s\n" % line)
 
+
 #%%
 def ms(ts_str):
     try:
@@ -52,17 +57,20 @@ def ms(ts_str):
     except:
         return None
 
+
 #%%
+
 
 def srts(input_file):
     """
     Iterates over lines ins SRT file
     """
+
     def lines(s):
         ts = None
         num = None
         ts_start, ts_end = None, None
-        for l in s.xreadlines():
+        for l in s.readlines():
             l = l.strip()
             if l.isdigit():
                 num = int(l)
@@ -85,38 +93,31 @@ def srts(input_file):
         yield from lines(input_file)
 
 
-
 @click.command()
-@click.argument("smi_input", type=click.File("rb"), required=False, default="Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi")
-@click.argument("srt_input", type=click.File("rb"), required=False, default="Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt")
+@click.argument(
+    "smi_input",
+    type=click.File("r"),
+    required=False,
+    default="Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi")
+@click.argument(
+    "srt_input",
+    type=click.File("r"),
+    required=False,
+    default="Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt")
 def cli(smi_input, srt_input):
     st = dict(msis(smi_input))
     ss = list(srts(srt_input))
     for ts in sorted(st.keys()):
-        lines = filter(lambda l: l[1] <= ts and ts <= l[2], ss)
+        lines = list(filter(lambda l: l[1] <= ts and ts <= l[2], ss))
         if lines:
-            ss_line = ' / '.join(l[3].strip() for l in lines).replace("<br>", " / ").replace('\t', ' ')
+            ss_line = ' / '.join(l[3].strip() for l in lines).replace(
+                "<br>", " / ").replace('\t', ' ')
 
             try:
                 click.echo(f"{st[ts]}\t{ss_line}")
             except Exception as ex:
-                logging.error("Error in line %d (ts: %d): %s", l[0], l[1], ex)
+                logging.error("Error in line %r: %s", lines, ex)
 
 
-#if __name__ == "__main__":
-#
-#    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-#
-#    st = dict(msis(sys.argv[1] if len(sys.argv) > 1 else "Aachi.And.Ssipak.KOREAN.DVDRiP.KOR.smi"))
-#    ss = list(srts(sys.argv[2] if len(sys.argv) > 2 else "Aachi.And.Ssipak.KOREAN.DVDRiP.SubEng.srt"))
-#    keys = sorted(st.keys())
-#    for ts in keys:
-#        lines = filter(lambda l: l[1] <= ts and ts <= l[2], ss)
-#        if lines:
-#            ss_line = ' / '.join(l[3].strip() for l in lines).replace("<br>", "")
-#
-#            try:
-#                print u"%s\t%s" % (st[ts], ss_line)
-#            except Exception as ex:
-#                logging.error("Error in line %d (ts: %d): %s", l[0], l[1], ex)
-
+if __name__ == "__main__":
+    cli()
